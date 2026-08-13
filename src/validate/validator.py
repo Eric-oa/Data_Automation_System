@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 
-REQUIRED_COLUMNS = ["customer_id", "name", "email", "age", "county", "purchase_amount"]
+REQUIRED_COLUMNS = ["customer_id", "name", "email", "age", "country", "purchase_amount"]
 
 EXPECTED_TYPES = {
     "customer_id": "integer",
@@ -37,17 +37,17 @@ def validate_data_types(df):
     invalid_types = {}
 
     if "customer_id" in df.columns:
-        if not pd.api.types.is_integer_dtype(df["customer_id"]):
-            invalid_types["customer_id"] = str(df["customer_id"].dtype)
+        non_missing_ids = df["customer_id"].dropna()
 
-    if "age" in df.columns:
-        non_missing_age = df["age"].dropna()
-
-        if not pd.api.types.is_integer_dtype(non_missing_age):
-            invalid_types["age"] = str(df["age"].dtype)
+        if not pd.api.types.is_integer_dtype(non_missing_ids):
+            invalid_types["customer_id"] = str(
+                df["customer_id"].dtype
+            )
 
     if "purchase_amount" in df.columns:
-        if not pd.api.types.is_numeric_dtype(df["purchase_amount"]):
+        non_missing_amount = df["purchase_amount"].dropna()
+
+        if not pd.api.types.is_numeric_dtype(non_missing_amount):
             invalid_types["purchase_amount"] = str(
                 df["purchase_amount"].dtype
             )
@@ -56,19 +56,114 @@ def validate_data_types(df):
 
 def validate_emails(df):
 
-    invalid_emails = []
+    invalid_rows = []
 
-    email_pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+    if "email" not in df.columns:
+        return invalid_rows
 
     for index, email in df["email"].items():
 
         if pd.isna(email):
+            invalid_rows.append(index)
+
+        elif not re.match(
+            r"^[\w\.-]+@[\w\.-]+\.\w+$",
+            str(email)
+        ):
+            invalid_rows.append(index)
+
+    return invalid_rows
+
+def validate_age(df):
+
+    invalid_rows = []
+
+    if "age" not in df.columns:
+        return invalid_rows
+
+    for index, age in df["age"].items():
+
+        if pd.isna(age):
             continue
 
-        if not re.match(email_pattern, str(email)):
-            invalid_emails.append(index)
+        if not float(age).is_integer():
+            invalid_rows.append(index)
+            continue
 
-    return invalid_emails
+        if age < 18 or age > 100:
+            invalid_rows.append(index)
+
+    return invalid_rows
+
+
+
+def validate_purchase_amount(df):
+
+    invalid_rows = []
+
+    if "purchase_amount" not in df.columns:
+        return invalid_rows
+
+    for index, amount in df["purchase_amount"].items():
+
+        if pd.isna(amount):
+            invalid_rows.append(index)
+            continue
+
+        if not isinstance(amount, (int, float)):
+            invalid_rows.append(index)
+            continue
+
+        if amount < 0:
+            invalid_rows.append(index)
+
+    return invalid_rows
+
+
+
+def validate_required_values(df):
+
+    required_columns = [
+        "customer_id",
+        "name",
+        "email",
+        "country",
+        "purchase_amount"
+    ]
+
+    missing_values = {}
+
+    for column in required_columns:
+
+        if column in df.columns:
+
+            count = df[column].isna().sum()
+
+            if count > 0:
+                missing_values[column] = count
+
+    return missing_values
+
+
+def validate_customer_ids(df):
+
+    invalid_rows = []
+
+    if "customer_id" not in df.columns:
+        return invalid_rows
+
+    duplicate_mask = df["customer_id"].duplicated(
+        keep=False
+    )
+
+    invalid_rows = df[
+        duplicate_mask
+    ].index.tolist()
+
+    return invalid_rows
+
+
+
 
 def validate_data(df):
 
@@ -82,13 +177,26 @@ def validate_data(df):
 
     invalid_emails = validate_emails(df)
 
+    invalid_ages = validate_age(df)
+
+    invalid_purchase_amounts = validate_purchase_amount(df)
+
+    invalid_customer_ids = validate_customer_ids(df)
+
+    required_value_errors = validate_required_values(df)
+
     return {
         "missing_columns": missing_columns,
         "missing_values": missing_values,
         "duplicate_count": duplicate_count,
         "invalid_types": invalid_types,
-        "invalid_emails": invalid_emails
+        "invalid_emails": invalid_emails,
+        "invalid_ages": invalid_ages,
+        "invalid_purchase_amounts": invalid_purchase_amounts,
+        "invalid_customer_ids": invalid_customer_ids,
+        "required_value_errors": required_value_errors
     }
+
 
 def print_validation_report(results, df):
 
@@ -122,7 +230,7 @@ def print_validation_report(results, df):
         print("Data types                    PASS")
 
     if results["invalid_emails"]:
-        print("Email format                  WARNING")
+        print("Email format                  ERROR")
     else:
         print("Email format                  PASS")
 
