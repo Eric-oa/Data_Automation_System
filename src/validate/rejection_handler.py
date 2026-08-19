@@ -30,3 +30,25 @@ def separate_valid_invalid_rows(df, invalid_rows):
     valid_data = df.drop(index=invalid_rows)
 
     return valid_data, invalid_data
+
+
+
+def add_rejection_reasons(df, validation_results):
+
+    df = df.copy()
+
+    df["rejection_reason"] = ""
+
+    for row in validation_results["invalid_emails"]:
+        df.loc[row, "rejection_reason"] = "invalid_email"
+
+    for row in validation_results["invalid_ages"]:
+        df.loc[row, "rejection_reason"] = "invalid_age"
+
+    for row in validation_results["invalid_purchase_amounts"]:
+        df.loc[row, "rejection_reason"] = "invalid_purchase_amount"
+
+    for row in validation_results["invalid_customer_ids"]:
+        df.loc[row, "rejection_reason"] = "duplicate_customer_id"
+
+    return df

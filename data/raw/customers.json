@@ -1,0 +1,42 @@
+[
+    {
+        "customer_id": 1,
+        "name": "Eric",
+        "email": "eric@email.com",
+        "age": 23,
+        "country": "Canada",
+        "purchase_amount": 250
+    },
+    {
+        "customer_id": 2,
+        "name": "Sarah",
+        "email": "sarah@email.com",
+        "age": 29,
+        "country": "USA",
+        "purchase_amount": 450
+    },
+    {
+        "customer_id": 3,
+        "name": "John",
+        "email": "john@email.com",
+        "age": 35,
+        "country": "UK",
+        "purchase_amount": 120
+    },
+    {
+        "customer_id": 4,
+        "name": "Alice",
+        "email": "invalidemail",
+        "age": 31,
+        "country": "Canada",
+        "purchase_amount": 300
+    },
+    {
+        "customer_id": 5,
+        "name": "Michael",
+        "email": "michael@email.com",
+        "age": null,
+        "country": "USA",
+        "purchase_amount": 500
+    }
+]

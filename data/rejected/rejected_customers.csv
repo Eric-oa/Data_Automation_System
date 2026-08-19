@@ -1,0 +1,2 @@
+customer_id,name,email,age,country,purchase_amount,rejection_reason
+4,Alice,invalidemail,31.0,Canada,300,invalid_email

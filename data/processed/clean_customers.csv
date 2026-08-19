@@ -1,0 +1,5 @@
+customer_id,name,email,age,country,purchase_amount
+1,Eric,eric@email.com,23.0,Canada,250
+2,Sarah,sarah@email.com,29.0,USA,450
+3,John,john@email.com,35.0,UK,120
+5,Michael,michael@email.com,,USA,500
